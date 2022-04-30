@@ -79,11 +79,15 @@ abstract class AppDelegate constructor(val layoutInflater: LayoutInflater): Life
         this.mLifecycleOwner = lifecycleOwner
     }
 
-    fun getLifecycle(): Lifecycle {
+    fun getLifecycleOwner(): LifecycleOwner {
         if(mLifecycleOwner == null) {
             error("mLifecycleOwner == null, after onViewCreated, before onDestroy")
         }
-        return mLifecycleOwner!!.lifecycle
+        return mLifecycleOwner!!
+    }
+
+    fun getLifecycle(): Lifecycle {
+        return getLifecycleOwner().lifecycle
     }
 
     override fun onStart() = Unit

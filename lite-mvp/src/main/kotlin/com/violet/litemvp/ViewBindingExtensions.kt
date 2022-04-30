@@ -42,21 +42,21 @@ inline fun <reified T : ViewBinding> AppDelegate.viewBindings(
         binding?.let { return it }
 
         //操作ViewBinding要在onDestroy() super方法之前，不然提示错误
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
+        if (!getLifecycle().currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
             error("Should not attempt to get bindings when AppDelegate views are destroyed. The fragment has already called onDestroy() at this point.")
         }
 
         return viewBindingFactory(mRootView).getViewBindings().also { viewBinding ->
             if (viewBinding is ViewDataBinding) {
-                viewBinding.lifecycleOwner = this@viewBindings
+                viewBinding.lifecycleOwner = getLifecycleOwner()
             }
             this.binding = viewBinding
-            lifecycle.addObserver(object : DefaultLifecycleObserver {
+            getLifecycle().addObserver(object : DefaultLifecycleObserver {
                 override fun onDestroy(owner: LifecycleOwner) {
                     super.onDestroy(owner)
                     (binding as? ViewDataBinding)?.unbind()
                     binding = null
-                    lifecycle.removeObserver(this)
+                    getLifecycle().removeObserver(this)
                 }
             })
         }
