@@ -25,9 +25,7 @@ import kotlin.reflect.KProperty
 inline fun <reified T : AppDelegate> Fragment.viewDelegates(
     crossinline viewDelegateFactory: () -> ViewDelegateFactory<T> = {
         DefaultBindViewDelegateFactory(
-            view,
             layoutInflater,
-            childFragmentManager,
             T::class
         )
     }
@@ -56,12 +54,16 @@ inline fun <reified T : AppDelegate> Fragment.viewDelegates(
 
         return try {
             viewDelegateFactory().getViewViewDelegate().also { vb ->
+                vb.setLifecycleOwner(viewLifecycleOwner)
+                vb.setFragmentManager(childFragmentManager)
+                view?.let {
+                    vb.setRootView(it)
+                }
                 this.viewDelegate = vb
-                this.viewDelegate?.setLifecycleOwner(viewLifecycleOwner)
                 lifecycle.addObserver(vb)
             }
         } catch (e: Exception) {
-            error("AppDelegate::${T::class.java.simpleName} create error")
+            error("${this@viewDelegates} create ${T::class.java.simpleName} error ${e.message}")
         }
     }
 }

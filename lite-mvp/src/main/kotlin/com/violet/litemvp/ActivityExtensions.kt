@@ -27,19 +27,8 @@ import kotlin.reflect.KProperty
 inline fun <reified T : AppDelegate> FragmentActivity.viewDelegates(
     crossinline viewDelegateFactory: () -> ViewDelegateFactory<T> = {
 
-        val contentParent: ViewGroup =
-            (window.decorView as ViewGroup).findViewById(android.R.id.content)
-
-        val activityView: View? =
-        if (contentParent.childCount < 1) {
-            null
-        } else {
-            contentParent.getChildAt(0)
-        }
         DefaultBindViewDelegateFactory(
-            activityView,
             layoutInflater,
-            supportFragmentManager,
             T::class
         )
     }
@@ -65,14 +54,26 @@ inline fun <reified T : AppDelegate> FragmentActivity.viewDelegates(
             error("Should not attempt to get viewDelegate when Fragment views are destroyed. The fragment has already called onDestroyView() at this point.")
         }
 
+        val contentParent: ViewGroup =
+            (window.decorView as ViewGroup).findViewById(android.R.id.content)
+
+        val activityView: View? =
+            if (contentParent.childCount < 1) {
+                null
+            } else {
+                contentParent.getChildAt(0)
+            }
+
         return try {
             viewDelegateFactory().getViewViewDelegate().also { vb ->
+                activityView?.let { vb.setRootView(it) }
+                vb.setFragmentManager(supportFragmentManager)
+                vb.setLifecycleOwner(thisRef)
                 this.viewDelegate = vb
-                this.viewDelegate?.setLifecycleOwner(thisRef)
                 lifecycle.addObserver(vb)
             }
         } catch (e: Exception) {
-            error("AppDelegate::${T::class.java.simpleName} create error ${e.message}")
+            error("${this@viewDelegates} create ${T::class.java.simpleName} error ${e.message}")
         }
     }
 }
