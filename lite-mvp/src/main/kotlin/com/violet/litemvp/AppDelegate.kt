@@ -29,11 +29,7 @@ interface AppDelegateLifecycle {
 }
 
 //DefaultLifecycleObserver
-abstract class AppDelegate constructor(val layoutInflater: LayoutInflater): LifecycleEventObserver, AppDelegateLifecycle, LifecycleOwner {
-
-    //扩展需要感知AppDelegate的生命周期，所以才用到这个类
-    private val lifecycleRegistry: LifecycleRegistry
-        get() = LifecycleRegistry(this)
+abstract class AppDelegate constructor(val layoutInflater: LayoutInflater): LifecycleEventObserver, AppDelegateLifecycle {
 
     private var fragmentManager: FragmentManager? = null
 
@@ -66,7 +62,6 @@ abstract class AppDelegate constructor(val layoutInflater: LayoutInflater): Life
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        lifecycleRegistry.currentState = source.lifecycle.currentState
         when(event) {
             Lifecycle.Event.ON_CREATE -> onViewCreated()
             Lifecycle.Event.ON_START -> onStart()
@@ -84,9 +79,11 @@ abstract class AppDelegate constructor(val layoutInflater: LayoutInflater): Life
         this.mLifecycleOwner = lifecycleOwner
     }
 
-    override fun getLifecycle(): Lifecycle {
-        mLifecycleOwner?.let { return it.lifecycle }
-        return lifecycleRegistry
+    fun getLifecycle(): Lifecycle {
+        if(mLifecycleOwner == null) {
+            error("mLifecycleOwner == null, after onViewCreated, before onDestroy")
+        }
+        return mLifecycleOwner!!.lifecycle
     }
 
     override fun onStart() = Unit
