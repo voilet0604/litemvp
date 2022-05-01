@@ -2,12 +2,10 @@ package com.violet.litemvp
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
-import androidx.viewbinding.ViewBinding
 
 
 interface AppDelegateLifecycle {

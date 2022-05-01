@@ -163,6 +163,7 @@ inline fun <reified T : ViewBinding> Fragment.viewBindings(
                 override fun onDestroy(owner: LifecycleOwner) {
                     (binding as? ViewDataBinding)?.unbind()
                     binding = null
+                    viewLifecycleOwner.lifecycle.removeObserver(this)
                 }
             })
         })

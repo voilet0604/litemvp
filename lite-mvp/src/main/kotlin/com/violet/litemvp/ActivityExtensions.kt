@@ -3,7 +3,6 @@ package com.violet.litemvp
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
@@ -32,7 +31,7 @@ inline fun <reified T : AppDelegate> FragmentActivity.viewDelegates(
             T::class
         )
     }
-): ReadOnlyProperty<AppCompatActivity, T> = object : ReadOnlyProperty<AppCompatActivity, T> {
+): ReadOnlyProperty<FragmentActivity, T> = object : ReadOnlyProperty<FragmentActivity, T> {
 
     private var viewDelegate: T? = null
 
@@ -46,13 +45,14 @@ inline fun <reified T : AppDelegate> FragmentActivity.viewDelegates(
         })
     }
 
-    override fun getValue(thisRef: AppCompatActivity, property: KProperty<*>): T {
+    override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
         viewDelegate?.let { return it }
 
         //操作ViewBinding要在onDestroy() super方法之前，不然提示错误
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
             error("Should not attempt to get viewDelegate when Fragment views are destroyed. The fragment has already called onDestroyView() at this point.")
         }
+
 
         val contentParent: ViewGroup =
             (window.decorView as ViewGroup).findViewById(android.R.id.content)
@@ -77,5 +77,3 @@ inline fun <reified T : AppDelegate> FragmentActivity.viewDelegates(
         }
     }
 }
-
-

@@ -1,8 +1,6 @@
 package com.violet.litemvp
 
 import android.view.LayoutInflater
-import android.view.View
-import androidx.fragment.app.FragmentManager
 import kotlin.reflect.KClass
 
 interface ViewDelegateFactory<T : AppDelegate> {
