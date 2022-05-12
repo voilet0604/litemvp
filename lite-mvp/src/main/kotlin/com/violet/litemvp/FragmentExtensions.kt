@@ -33,17 +33,6 @@ inline fun <reified T : AppDelegate> Fragment.viewDelegates(
 
     private var viewDelegate: T? = null
 
-    init {
-        lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onDestroy(owner: LifecycleOwner) {
-                super.onDestroy(owner)
-                Timber.d("lifecycle: ${this@viewDelegates} 的 $viewDelegate 置位null")
-                viewDelegate = null
-                lifecycle.removeObserver(this)
-            }
-        })
-    }
-
     override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
         viewDelegate?.let { return it }
 
@@ -61,7 +50,18 @@ inline fun <reified T : AppDelegate> Fragment.viewDelegates(
                 }
                 this.viewDelegate = vb
                 lifecycle.addObserver(vb)
+                viewLifecycleOwnerLiveData.observe(viewLifecycleOwner) {
+                    it.lifecycle.addObserver(object : DefaultLifecycleObserver {
+                        override fun onDestroy(owner: LifecycleOwner) {
+                            super.onDestroy(owner)
+                            Timber.d("lifecycle: ${this@viewDelegates} 的 $viewDelegate 置位null")
+                            viewDelegate = null
+                            lifecycle.removeObserver(this)
+                        }
+                    })
+                }
             }
+
         } catch (e: Exception) {
             error("${this@viewDelegates} create ${T::class.java.simpleName} error ${e.message}")
         }

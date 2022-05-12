@@ -3,13 +3,9 @@ package com.violet.litemvp
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import timber.log.Timber
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
-
-/**
- * 扩展AppDelegate，对创建的对象，进行自动释放内存
- */
-inline fun <reified T : Any> AppDelegate.autoCleans(objectFactory: ()-> T) = autoCleans(objectFactory.invoke())
 
 /**
  * 扩展AppDelegate，对创建的对象，进行自动释放内存
@@ -18,7 +14,7 @@ inline fun <reified T : Any> AppDelegate.autoCleans(objectFactory: ()-> T) = aut
  * 修饰符用var，那么代表属性可读可写。
  * 如果强制只读的话，那么可以 实现 ReadOnlyProperty接口，该接口只有getValue方法
  */
-inline fun <reified T : Any> AppDelegate.autoCleans(obj: T): ReadWriteProperty<AppDelegate, T> = object :
+inline fun <reified T : Any> AppDelegate.autoCleans(noinline objectFactory: ()-> T): ReadWriteProperty<AppDelegate, T> = object :
     ReadWriteProperty<AppDelegate, T> {
 
     private var objects: T? = null
@@ -29,11 +25,12 @@ inline fun <reified T : Any> AppDelegate.autoCleans(obj: T): ReadWriteProperty<A
 
     override fun getValue(thisRef: AppDelegate, property: KProperty<*>): T {
         objects?.let { return it }
-        objects = obj
+        objects = objectFactory()
         getLifecycle().addObserver(object : DefaultLifecycleObserver {
             override fun onDestroy(owner: LifecycleOwner) {
                 super.onDestroy(owner)
                 //TODO 如果集合类型，应该先clean
+                Timber.d("lifecycle ${this@autoCleans} 开始清理 $objects")
                 objects = null
                 getLifecycle().removeObserver(this)
             }
@@ -41,3 +38,8 @@ inline fun <reified T : Any> AppDelegate.autoCleans(obj: T): ReadWriteProperty<A
         return objects!!
     }
 }
+
+/**
+ * 扩展AppDelegate，对创建的对象，进行自动释放内存
+ */
+inline fun <reified T : Any> AppDelegate.autoCleans(obj: T) = autoCleans{ obj }
