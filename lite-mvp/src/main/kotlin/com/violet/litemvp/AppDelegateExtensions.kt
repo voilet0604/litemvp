@@ -1,8 +1,7 @@
 package com.violet.litemvp
 
 
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.*
 import timber.log.Timber
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -43,3 +42,6 @@ inline fun <reified T : Any> AppDelegate.autoCleans(noinline objectFactory: ()->
  * 扩展AppDelegate，对创建的对象，进行自动释放内存
  */
 inline fun <reified T : Any> AppDelegate.autoCleans(obj: T) = autoCleans{ obj }
+
+val AppDelegate.lifecycleScope: LifecycleCoroutineScope
+    get() = getLifecycle().coroutineScope
