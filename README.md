@@ -2,7 +2,6 @@
 # LiteMvpKtx
 一个适合敏捷开发，不需要继承BaseActivity/BaseFragment的 MVP,没有强制的约束规范。
 仿照by viewModels<ViewModel>()方法
-111111
 
 # License
 ```properties
